@@ -8,7 +8,7 @@ import sqlite3
 
 from sqlfocus import SQLTable
 
-sql = (
+schema = (
     ("id", "INTEGER"),
     ("name", "TEXT")
 )
@@ -18,7 +18,7 @@ table = SQLTable("test", conn)
 
 
 "CREATE TABLE IF NOT EXISTS test (id INTEGER, name TEXT);"
-table.create(exists=True, schema=sql)
+table.create(exists=True, schema=schema)
 
 
 'SELECT * FROM test WHERE id = 23455 AND name = "None"'
