@@ -22,18 +22,23 @@ class SQLTable:
             vars=", ".join(colums)
         ))
 
-    async def selectall(self, where=()):
+    async def selectall(self, one_line=False, where=()):
         cur = await self.conn.cursor()
 
         if len(where) > 0:
-            return await cur.execute(SELECT_WHERE_SQL.format(
+            e = await cur.execute(SELECT_WHERE_SQL.format(
                 name=self.name,
                 where=" AND ".join(where)
             ))
         else:
-            return await cur.execute(SELECT_SQL.format(
+            e = await cur.execute(SELECT_SQL.format(
                 name=self.name
             ))
+
+        if one_line:
+            return await e.fetchone()
+        else:
+            return await e.fetchall()
 
     async def insert(self, *args):
         cur = await self.conn.cursor()
