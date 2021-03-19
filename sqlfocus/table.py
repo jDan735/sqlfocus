@@ -57,6 +57,9 @@ class SQLTable:
         return await cur.execute(sql)
 
     async def _where(self, where, sql, sql2):
+        if where.__class__ == str:
+            where = [where]
+
         if len(where) > 0:
             return await self.execute(sql.format(
                 name=self.name,
