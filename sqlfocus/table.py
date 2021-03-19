@@ -1,9 +1,13 @@
+import logging
+
 CREATE_SQL = "CREATE TABLE {exists}{name} ({vars});"
 SELECT_SQL = "SELECT * FROM {name}"
-SELECT_WHERE_SQL = "SELECT * FROM {name} WHERE {where};"
-DELETE_SQL = "DELETE * FROM {name}"
-DELETE_WHERE_SQL = "DELETE * FROM {name} WHERE {where};"
-INSERT_INTO_SQL = "INSERT INTO {name} VALUES ({values})"
+SELECT_WHERE_SQL = "SELECT * FROM {name} WHERE ({where});"
+DELETE_SQL = "DELETE FROM {name}"
+DELETE_WHERE_SQL = "DELETE FROM {name} WHERE ({where});"
+INSERT_INTO_SQL = "INSERT INTO {name} VALUES ({values});"
+
+logger = logging.getLogger("sqlfocus")
 
 
 class SQLTable:
@@ -13,13 +17,12 @@ class SQLTable:
         self.selectall = self.select
 
     async def create(self, schema, exists=True):
-        cur = await self.conn.cursor()
         colums = []
 
         for var in schema:
             colums.append(" ".join(var))
 
-        await cur.execute(CREATE_SQL.format(
+        await self.execute(CREATE_SQL.format(
             name=self.name,
             exists="IF NOT EXISTS " if exists else "",
             vars=", ".join(colums)
@@ -42,23 +45,25 @@ class SQLTable:
             return await e.fetchall()
 
     async def insert(self, *args):
-        cur = await self.conn.cursor()
-
-        return await cur.execute(INSERT_INTO_SQL.format(
+        return await self.execute(INSERT_INTO_SQL.format(
             name=self.name,
             values=", ".join(all2string(args))
         ))
 
-    async def _where(self, where, sql, sql2):
-        cur = await self.conn.cursor()
+    async def execute(self, sql):
+        logger.debug(sql)
 
+        cur = await self.conn.cursor()
+        return await cur.execute(sql)
+
+    async def _where(self, where, sql, sql2):
         if len(where) > 0:
-            return await cur.execute(sql.format(
+            return await self.execute(sql.format(
                 name=self.name,
                 where=" AND ".join(where)
             ))
         else:
-            return await cur.execute(sql2.format(
+            return await self.execute(sql2.format(
                 name=self.name
             ))
 
