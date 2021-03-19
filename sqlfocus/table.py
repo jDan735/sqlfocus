@@ -26,7 +26,7 @@ class SQLTable:
         ))
 
     async def select(self, one_line=False, where=()):
-        e = self._where(where, SELECT_WHERE_SQL, SELECT_SQL)
+        e = await self._where(where, SELECT_WHERE_SQL, SELECT_SQL)
 
         if one_line:
             return await e.fetchone()
@@ -34,7 +34,7 @@ class SQLTable:
             return await e.fetchall()
 
     async def delete(self, one_line=False, where=()):
-        e = self._where(where, DELETE_WHERE_SQL, DELETE_SQL)
+        e = await self._where(where, DELETE_WHERE_SQL, DELETE_SQL)
 
         if one_line:
             return await e.fetchone()
