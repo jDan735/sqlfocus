@@ -15,6 +15,7 @@ class SQLTable:
         self.name = name
         self.conn = conn
         self.selectall = self.select
+        self.quote = '"'
 
     async def create(self, schema, exists=True):
         colums = []
@@ -47,7 +48,7 @@ class SQLTable:
     async def insert(self, *args):
         return await self.execute(INSERT_INTO_SQL.format(
             name=self.name,
-            values=", ".join(all2string(args))
+            values=", ".join(all2string(args, self.quote))
         ))
 
     async def execute(self, sql):
@@ -71,14 +72,14 @@ class SQLTable:
             ))
 
 
-def all2string(args):
+def all2string(args, quote='"'):
     params = []
 
     for arg in args:
         if arg.__class__ != str:
             arg = str(arg)
         else:
-            arg = f'"{arg}"'
+            arg = f"{quote}{arg}{quote}"
 
         params.append(arg)
 
