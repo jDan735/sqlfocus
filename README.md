@@ -22,8 +22,8 @@ table.create(exists=True, schema=sql)
 
 
 'SELECT * FROM test WHERE id = 23455 AND name = "None"'
-table.selectall()
-table.selectall(where=["id = 23455", 'name = "None"'])
+table.select()
+table.select(where=["id = 23455", 'name = "None"'])
 
 
 'INSERT INTO test VALUES (23455, "None")'

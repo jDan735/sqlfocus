@@ -1,6 +1,8 @@
 CREATE_SQL = "CREATE TABLE {exists}{name} ({vars});"
 SELECT_SQL = "SELECT * FROM {name}"
 SELECT_WHERE_SQL = "SELECT * FROM {name} WHERE {where};"
+DELETE_SQL = "DELETE * FROM {name}"
+DELETE_WHERE_SQL = "DELETE * FROM {name} WHERE {where};"
 INSERT_INTO_SQL = "INSERT INTO {name} VALUES ({values})"
 
 
@@ -8,6 +10,7 @@ class SQLTable:
     def __init__(self, name, conn=None):
         self.name = name
         self.conn = conn
+        self.selectall = self.select
 
     async def create(self, schema, exists=True):
         cur = await self.conn.cursor()
@@ -22,18 +25,16 @@ class SQLTable:
             vars=", ".join(colums)
         ))
 
-    async def selectall(self, one_line=False, where=()):
-        cur = await self.conn.cursor()
+    async def select(self, one_line=False, where=()):
+        e = self._where(where, SELECT_WHERE_SQL, SELECT_SQL)
 
-        if len(where) > 0:
-            e = await cur.execute(SELECT_WHERE_SQL.format(
-                name=self.name,
-                where=" AND ".join(where)
-            ))
+        if one_line:
+            return await e.fetchone()
         else:
-            e = await cur.execute(SELECT_SQL.format(
-                name=self.name
-            ))
+            return await e.fetchall()
+
+    async def delete(self, one_line=False, where=()):
+        e = self._where(where, DELETE_WHERE_SQL, DELETE_SQL)
 
         if one_line:
             return await e.fetchone()
@@ -47,6 +48,19 @@ class SQLTable:
             name=self.name,
             values=", ".join(all2string(args))
         ))
+
+    async def _where(self, where, sql, sql2):
+        cur = await self.conn.cursor()
+
+        if len(where) > 0:
+            return await cur.execute(sql.format(
+                name=self.name,
+                where=" AND ".join(where)
+            ))
+        else:
+            return await cur.execute(sql2.format(
+                name=self.name
+            ))
 
 
 def all2string(args):
