@@ -1,6 +1,6 @@
-from .table import SQLTable
+from .table import SQLTable, SQLTableBase
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 
 class SQLFocus:

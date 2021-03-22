@@ -10,12 +10,11 @@ INSERT_INTO_SQL = "INSERT INTO {name} VALUES ({values});"
 logger = logging.getLogger("sqlfocus")
 
 
-class SQLTable:
-    def __init__(self, name, conn=None):
-        self.name = name
+class SQLTableBase:
+    def __init__(self, conn=None, quote='"'):
+        self.name = self.__class__.__name__.lower()
         self.conn = conn
-        self.selectall = self.select
-        self.quote = '"'
+        self.quote = quote
 
     async def create(self, schema, exists=True):
         colums = []
@@ -70,6 +69,13 @@ class SQLTable:
             return await self.execute(sql2.format(
                 name=self.name
             ))
+
+
+class SQLTable(SQLTableBase):
+    def __init__(self, name=None, conn=None, quote='"'):
+        self.name = name
+        self.conn = conn
+        self.quote = quote
 
 
 def all2string(args, quote='"'):
