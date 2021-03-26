@@ -86,8 +86,8 @@ class SQLTable(SQLTableBase):
 
 
 def all2string(args, q='"'):
-    if args.__class__ == list:
+    if args.__class__ == list or args.__class__ == tuple:
         return [str(_) if _.__class__ != str else f"{q}{_}{q}" for _ in args]
     else:
-        return ["=".join([_, f"{q}{args[_]}{q}"]) if args[_].__class__ != str
-                else "=".join([_, args[_]]) for _ in args]
+        return [f"{_}={args[_]}" if args[_].__class__ != str
+                else f"{_}={q}{args[_]}{q}" for _ in args]
