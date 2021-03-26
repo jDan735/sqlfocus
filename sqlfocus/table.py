@@ -1,11 +1,12 @@
 import logging
 
+INSERT_INTO_SQL = "INSERT INTO {name} VALUES ({values});"
 CREATE_SQL = "CREATE TABLE {exists}{name} ({vars});"
 SELECT_SQL = "SELECT * FROM {name}"
-SELECT_WHERE_SQL = "SELECT * FROM {name} WHERE ({where});"
 DELETE_SQL = "DELETE FROM {name}"
-DELETE_WHERE_SQL = "DELETE FROM {name} WHERE ({where});"
-INSERT_INTO_SQL = "INSERT INTO {name} VALUES ({values});"
+UPDATE_SQL = "UPDATE {name} SET {vars}"
+WHERE_SQL = " WHERE {where};"
+
 
 logger = logging.getLogger("sqlfocus")
 
@@ -29,7 +30,7 @@ class SQLTableBase:
         ))
 
     async def select(self, one_line=False, where=()):
-        e = await self._where(where, SELECT_WHERE_SQL, SELECT_SQL)
+        e = await self._where(where, SELECT_SQL)
 
         if one_line:
             return await e.fetchone()
@@ -37,12 +38,18 @@ class SQLTableBase:
             return await e.fetchall()
 
     async def delete(self, one_line=False, where=()):
-        e = await self._where(where, DELETE_WHERE_SQL, DELETE_SQL)
+        e = await self._where(where, DELETE_SQL)
 
         if one_line:
             return await e.fetchone()
         else:
             return await e.fetchall()
+
+    async def update(self, where=(), **kwargs):
+        return await self._where(where, UPDATE_SQL.format(
+            vars=" AND ".join(all2string(kwargs)),
+            name="{name}"
+        ))
 
     async def insert(self, *args):
         return await self.execute(INSERT_INTO_SQL.format(
@@ -56,17 +63,17 @@ class SQLTableBase:
         cur = await self.conn.cursor()
         return await cur.execute(sql)
 
-    async def _where(self, where, sql, sql2):
+    async def _where(self, where, sql):
         if where.__class__ == str:
             where = [where]
 
         if len(where) > 0:
-            return await self.execute(sql.format(
+            return await self.execute((sql + WHERE_SQL).format(
                 name=self.name,
                 where=" AND ".join(where)
             ))
         else:
-            return await self.execute(sql2.format(
+            return await self.execute(sql.format(
                 name=self.name
             ))
 
@@ -78,15 +85,9 @@ class SQLTable(SQLTableBase):
         self.quote = quote
 
 
-def all2string(args, quote='"'):
-    params = []
-
-    for arg in args:
-        if arg.__class__ != str:
-            arg = str(arg)
-        else:
-            arg = f"{quote}{arg}{quote}"
-
-        params.append(arg)
-
-    return params
+def all2string(args, q='"'):
+    if args.__class__ == list:
+        return [str(_) if _.__class__ != str else f"{q}{_}{q}" for _ in args]
+    else:
+        return ["=".join([_, f"{q}{args[_]}{q}"]) if args[_].__class__ != str
+                else "=".join([_, args[_]]) for _ in args]
