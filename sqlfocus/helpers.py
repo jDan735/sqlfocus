@@ -1,7 +1,6 @@
 def sstr(text):
-    return text.replace("\\", "\\\\")\
-               .replace('"', '\\"')\
-               .replace("'", '\\"')
+    return text.replace('"', '""')\
+               .replace("'", "''")
 
 
 def all2string(args, q="'"):
