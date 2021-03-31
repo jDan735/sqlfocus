@@ -1,5 +1,7 @@
 import logging
 
+from .helpers import all2string
+
 WHERE_SQL = " WHERE {where}"
 ORDER_SQL = " ORDER BY {order}"
 
