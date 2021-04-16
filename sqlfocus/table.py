@@ -15,7 +15,7 @@ sqlfocus = SQLFocus()
 class SQLTableBase:
     def __init__(self, conn=None, quote='"'):
         self._name = self.__class__.__name__.lower()
-        self._conn = conn
+        self._conn, self.conn = conn, conn
         self._quote = quote
 
     async def load(self):
@@ -84,5 +84,5 @@ class SQLTableBase:
 class SQLTable(SQLTableBase):
     def __init__(self, name, conn, quote='"'):
         self._name = name
-        self._conn = conn
+        self._conn, self.conn = conn, conn
         self._quote = quote
