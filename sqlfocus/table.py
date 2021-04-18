@@ -37,8 +37,6 @@ class SQLTableBase:
         self._colums = [" ".join(var) for var in schema]
         self.__load()
 
-        print(self._name)
-
         return await self.execute(CREATE_SQL.format(
             name=self._name,
             exists="IF NOT EXISTS " if exists else "",
